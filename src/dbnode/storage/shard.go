@@ -1513,7 +1513,6 @@ func (s *dbShard) FetchBlocksMetadataV2(
 	encodedPageToken PageToken,
 	opts block.FetchBlocksMetadataOptions,
 ) (block.FetchBlocksMetadataResults, PageToken, error) {
-	fmt.Println("calling FetchBlocksMetadataV2")
 	token := new(pagetoken.PageToken)
 	if encodedPageToken != nil {
 		if err := proto.Unmarshal(encodedPageToken, token); err != nil {
@@ -1526,7 +1525,6 @@ func (s *dbShard) FetchBlocksMetadataV2(
 
 	cachePolicy := s.opts.SeriesCachePolicy()
 	if cachePolicy == series.CacheAll {
-		fmt.Println("cache all?")
 		// If we are using a series cache policy that caches all block metadata
 		// in memory then we only ever perform the active phase as all metadata
 		// is actively held in memory
@@ -1562,7 +1560,6 @@ func (s *dbShard) FetchBlocksMetadataV2(
 		return result, PageToken(data), nil
 	}
 
-	fmt.Println("not cache all")
 	// NB(r): If returning mixed in memory and disk results, then we return anything
 	// that's mutable in memory first then all disk results.
 	// We work backwards so we don't hit race conditions with blocks
@@ -1581,7 +1578,6 @@ func (s *dbShard) FetchBlocksMetadataV2(
 	// the file is accessible and us opening a reader to it then this will bubble
 	// an error to the client which will be retried.
 	if flushedPhase == nil {
-		fmt.Println("active phase portion")
 		// If first phase started or no phases started then return active
 		// series metadata until we find a block start time that we have fileset
 		// files for
@@ -1639,8 +1635,6 @@ func (s *dbShard) FetchBlocksMetadataV2(
 		tokenBlockStart = time.Unix(0, flushedPhase.CurrBlockStartUnixNanos)
 		blockStart = tokenBlockStart
 	}
-	fmt.Println("non-active phase portion, blockStart:", blockStart)
-	fmt.Println("non-active phase portion, blockSize:", blockSize)
 
 	// Work backwards while in requested range and not before retention
 	for !blockStart.Before(start) &&
@@ -1650,13 +1644,11 @@ func (s *dbShard) FetchBlocksMetadataV2(
 			return nil, nil, err
 		}
 		if !exists {
-			fmt.Println("not existing", blockStart)
 			// No fileset files here
 			blockStart = blockStart.Add(-1 * blockSize)
 			continue
 		}
 
-		fmt.Println("exist", blockStart)
 		var pos readerPosition
 		if !tokenBlockStart.IsZero() {
 			// Was previously seeking through a previous block, need to validate
@@ -1714,7 +1706,6 @@ func (s *dbShard) FetchBlocksMetadataV2(
 			}
 			blockResult.Add(value)
 
-			fmt.Println("adding result")
 			numResults++
 			result.Add(block.NewFetchBlocksMetadataResult(id, tags,
 				blockResult))
