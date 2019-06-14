@@ -92,8 +92,8 @@ const (
 	maxBgProcessLimitMonitorDuration = 5 * time.Minute
 	filePathPrefixLockFile           = ".lock"
 	defaultServiceName               = "m3dbnode"
-	raiseProcessLimitsEnvVar         = "PROCESS_LIMITS_RAISE"
-	raiseProcessLimitsEnvVarTrue     = "true"
+	skipRaiseProcessLimitsEnvVar     = "SKIP_PROCESS_LIMITS_RAISE"
+	skipRaiseProcessLimitsEnvVarTrue = "true"
 )
 
 // RunOptions provides options for running the server
@@ -152,8 +152,9 @@ func Run(runOpts RunOptions) {
 	}
 	defer logger.Sync()
 
-	raiseLimits := strings.TrimSpace(os.Getenv(raiseProcessLimitsEnvVar))
-	if raiseLimits == raiseProcessLimitsEnvVarTrue {
+	// By default attempt to raise process limits, which is a benign operation.
+	skipRaiseLimits := strings.TrimSpace(os.Getenv(skipRaiseProcessLimitsEnvVar))
+	if skipRaiseLimits != skipRaiseProcessLimitsEnvVarTrue {
 		// Raise fd limits to nr_open system limit
 		result, err := xos.RaiseProcessNoFileToNROpen()
 		if err != nil {
