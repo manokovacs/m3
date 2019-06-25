@@ -196,7 +196,7 @@ func (o *options) SetColdWritesEnabled(value bool) Options {
 }
 
 func (o *options) ColdWritesEnabled() bool {
-	return o.coldWritesEnabled
+	return true
 }
 
 func (o *options) SetBufferBucketVersionsPool(value *BufferBucketVersionsPool) Options {
