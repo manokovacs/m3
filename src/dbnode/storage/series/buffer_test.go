@@ -1334,6 +1334,16 @@ func TestOptimizedTimes(t *testing.T) {
 	assert.False(t, times.Contains(xtime.UnixNano(0)))
 
 	var expectedTimes []xtime.UnixNano
+	var forEachTimes []xtime.UnixNano
+	// Make sure ForEach doesn't call the provided func if there are actual
+	// times in OptimizedTimes.
+	times.ForEach(func(tNano xtime.UnixNano) {
+		forEachTimes = append(forEachTimes, tNano)
+	})
+	assertEqualUnixSlices(t, expectedTimes, forEachTimes)
+
+	expectedTimes = expectedTimes[:0]
+	forEachTimes = forEachTimes[:0]
 
 	// These adds should only go in the array.
 	for i := 0; i < optimizedTimesArraySize; i++ {
@@ -1359,14 +1369,17 @@ func TestOptimizedTimes(t *testing.T) {
 		assert.True(t, times.Contains(tNano))
 	}
 
-	var forEachTimes []xtime.UnixNano
 	times.ForEach(func(tNano xtime.UnixNano) {
 		forEachTimes = append(forEachTimes, tNano)
 	})
 
-	require.Equal(t, len(expectedTimes), len(forEachTimes))
-	for i := range expectedTimes {
-		assert.Equal(t, expectedTimes[i], forEachTimes[i])
+	assertEqualUnixSlices(t, expectedTimes, forEachTimes)
+}
+
+func assertEqualUnixSlices(t *testing.T, expected, actual []xtime.UnixNano) {
+	require.Equal(t, len(expected), len(actual))
+	for i := range expected {
+		assert.Equal(t, expected[i], actual[i])
 	}
 }
 

@@ -1908,8 +1908,9 @@ func (s *dbShard) WarmFlush(
 		// We explicitly set delete if exists to false here as we track which
 		// filesets exist at bootstrap time so we should never encounter a time
 		// where a fileset already exists when we attempt to flush unless there
-		// is a bug in the code.
+		// is a bug in the code
 		DeleteIfExists: false,
+		FileSetType:    persist.FileSetFlushType,
 	}
 	prepared, err := flushPreparer.PrepareData(prepareOpts)
 	if err != nil {
